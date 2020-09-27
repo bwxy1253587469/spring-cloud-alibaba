@@ -16,9 +16,10 @@
 
 package com.alibaba.cloud.nacos.client;
 
-import java.util.Arrays;
-import java.util.List;
-
+import com.alibaba.cloud.nacos.NacosConfigProperties;
+import com.alibaba.cloud.nacos.NacosPropertySourceRepository;
+import com.alibaba.cloud.nacos.refresh.NacosContextRefresher;
+import com.alibaba.nacos.api.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
@@ -28,10 +29,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
 import org.springframework.util.StringUtils;
 
-import com.alibaba.cloud.nacos.NacosConfigProperties;
-import com.alibaba.cloud.nacos.NacosPropertySourceRepository;
-import com.alibaba.cloud.nacos.refresh.NacosContextRefresher;
-import com.alibaba.nacos.api.config.ConfigService;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author xiaojing
@@ -60,13 +59,16 @@ public class NacosPropertySourceLocator implements PropertySourceLocator {
 	@Override
 	public PropertySource<?> locate(Environment env) {
 
+		// 创建ConfigService 实例 这个类就是nacos client提供的加载配置的类
 		ConfigService configService = nacosConfigProperties.configServiceInstance();
 
 		if (null == configService) {
 			log.warn("no instance of config service found, can't load config from nacos");
 			return null;
 		}
+		// 拉去配置超时时间
 		long timeout = nacosConfigProperties.getTimeout();
+		// 对configService的封装
 		nacosPropertySourceBuilder = new NacosPropertySourceBuilder(configService,
 				timeout);
 		String name = nacosConfigProperties.getName();
@@ -80,11 +82,15 @@ public class NacosPropertySourceLocator implements PropertySourceLocator {
 			dataIdPrefix = env.getProperty("spring.application.name");
 		}
 
+		// 要返回的配置源
 		CompositePropertySource composite = new CompositePropertySource(
 				NACOS_PROPERTY_SOURCE_NAME);
 
+		// 加载公共配置配置 即 group ID为DEFAULT_GROUP的配置
 		loadSharedConfiguration(composite);
+		// 使用别的group ID的配置
 		loadExtConfiguration(composite);
+		// 加载自己的 spring.application.name(项目名).properties
 		loadApplicationConfiguration(composite, dataIdPrefix, nacosConfigProperties, env);
 
 		return composite;
@@ -108,6 +114,7 @@ public class NacosPropertySourceLocator implements PropertySourceLocator {
 			boolean isRefreshable = checkDataIdIsRefreshbable(refreshDataIds,
 					sharedDataIdArry[i]);
 
+			// 加载 DEFAULT_GROUP 下的配置
 			loadNacosDataIfPresent(compositePropertySource, dataId, "DEFAULT_GROUP",
 					fileExtension, isRefreshable);
 		}
@@ -152,6 +159,7 @@ public class NacosPropertySourceLocator implements PropertySourceLocator {
 		String fileExtension = properties.getFileExtension();
 		String nacosGroup = properties.getGroup();
 
+		// 加载配置
 		loadNacosDataIfPresent(compositePropertySource,
 				dataIdPrefix + DOT + fileExtension, nacosGroup, fileExtension, true);
 		for (String profile : environment.getActiveProfiles()) {

@@ -16,16 +16,11 @@
 
 package com.alibaba.cloud.nacos.refresh;
 
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
+import com.alibaba.cloud.nacos.NacosPropertySourceRepository;
+import com.alibaba.cloud.nacos.client.NacosPropertySource;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.config.listener.Listener;
+import com.alibaba.nacos.api.exception.NacosException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -35,11 +30,15 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.util.StringUtils;
 
-import com.alibaba.cloud.nacos.NacosPropertySourceRepository;
-import com.alibaba.cloud.nacos.client.NacosPropertySource;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.listener.Listener;
-import com.alibaba.nacos.api.exception.NacosException;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * On application start up, NacosContextRefresher add nacos listeners to all application
@@ -90,6 +89,7 @@ public class NacosContextRefresher
 	}
 
 	private void registerNacosListenersForApplications() {
+		// 有多少个配置文件  就创建多少个listener
 		if (refreshProperties.isEnabled()) {
 			for (NacosPropertySource nacosPropertySource : NacosPropertySourceRepository
 					.getAll()) {
@@ -122,6 +122,7 @@ public class NacosContextRefresher
 					}
 				}
 				refreshHistory.add(dataId, md5);
+				// 发布刷新事件
 				applicationContext.publishEvent(
 						new RefreshEvent(this, null, "Refresh Nacos config"));
 				if (log.isDebugEnabled()) {
