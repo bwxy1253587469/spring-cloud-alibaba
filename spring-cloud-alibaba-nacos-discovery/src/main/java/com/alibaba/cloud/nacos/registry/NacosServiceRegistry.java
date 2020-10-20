@@ -16,17 +16,16 @@
 
 package com.alibaba.cloud.nacos.registry;
 
-import java.util.List;
-
+import com.alibaba.cloud.nacos.NacosDiscoveryProperties;
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.pojo.Instance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.serviceregistry.Registration;
 import org.springframework.cloud.client.serviceregistry.ServiceRegistry;
 import org.springframework.util.StringUtils;
 
-import com.alibaba.cloud.nacos.NacosDiscoveryProperties;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.pojo.Instance;
+import java.util.List;
 
 /**
  * @author xiaojing
@@ -53,11 +52,14 @@ public class NacosServiceRegistry implements ServiceRegistry<Registration> {
 			return;
 		}
 
+		// 获取服务ID
 		String serviceId = registration.getServiceId();
 
+		// 组装服务属性
 		Instance instance = getNacosInstanceFromRegistration(registration);
 
 		try {
+			// 通过接口注册到nacos server
 			namingService.registerInstance(serviceId, instance);
 			log.info("nacos registry, {} {}:{} register finished", serviceId,
 					instance.getIp(), instance.getPort());

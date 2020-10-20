@@ -46,6 +46,7 @@ public class NacosDiscoveryClientAutoConfiguration {
 	@Bean
 	public DiscoveryClient nacosDiscoveryClient(
 			NacosDiscoveryProperties discoveryProperties) {
+		// 通过serviceID获取服务列表
 		return new NacosDiscoveryClient(discoveryProperties);
 	}
 

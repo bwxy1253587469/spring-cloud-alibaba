@@ -46,6 +46,7 @@ public class NacosDiscoveryAutoConfiguration {
 	@Bean
 	public NacosServiceRegistry nacosServiceRegistry(
 			NacosDiscoveryProperties nacosDiscoveryProperties) {
+		// 将服务注册到nacos
 		return new NacosServiceRegistry(nacosDiscoveryProperties);
 	}
 
@@ -54,6 +55,7 @@ public class NacosDiscoveryAutoConfiguration {
 	public NacosRegistration nacosRegistration(
 			NacosDiscoveryProperties nacosDiscoveryProperties,
 			ApplicationContext context) {
+		// 获取instance的属性
 		return new NacosRegistration(nacosDiscoveryProperties, context);
 	}
 
@@ -63,6 +65,7 @@ public class NacosDiscoveryAutoConfiguration {
 			NacosServiceRegistry registry,
 			AutoServiceRegistrationProperties autoServiceRegistrationProperties,
 			NacosRegistration registration) {
+		// sc的注册
 		return new NacosAutoServiceRegistration(registry,
 				autoServiceRegistrationProperties, registration);
 	}
